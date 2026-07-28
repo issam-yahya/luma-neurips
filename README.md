@@ -16,9 +16,7 @@ LUMA/
 ├── utils/                # metrics, tools, time features
 ├── scripts/              # TSLib-style run scripts
 ├── dataset/              # the 6 datasets LUMA is evaluated on (bundled)
-├── reproduce/            # one-command reproduction of the reported numbers
-├── checkpoints/          # (created at run time)
-└── logs_reproduce/       # (created at run time)
+└── checkpoints/          # (created at run time)
 ```
 
 ## Setup
@@ -44,17 +42,6 @@ python run.py \
 ```
 
 `--period_len` (P) and `--rank` (R) are LUMA's two structural knobs.
-
-## Reproduce every reported number
-
-```bash
-bash reproduce/reproduce_luma.sh        # 36 configs, ~1–2 h on one GPU
-python reproduce/check_reproduction.py  # -> PASS 36/36
-```
-
-The reference numbers reproduce **bit-exactly with `--seed 2021`** (the driver's
-default). See `reproduce/README.md` for details, per-dataset configs, and the
-seed-stability sweep.
 
 ## Datasets
 
