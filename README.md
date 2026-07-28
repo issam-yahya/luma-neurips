@@ -47,8 +47,9 @@ python run.py \
 
 `dataset/` ships empty. Populate it with the six datasets LUMA is evaluated
 on: `ETT-small` (ETTh1/h2, ETTm1/m2), `electricity`, `traffic`,
-`exchange_rate`, `weather`, `illness`. Drop any additional TSLib-format
-dataset into `dataset/` to train on it.
+`exchange_rate`, `weather`, `illness`. Get them from
+[Time-Series-Library](https://github.com/thuml/Time-Series-Library). Drop any
+additional TSLib-format dataset into `dataset/` to train on it.
 
 ## The model
 
