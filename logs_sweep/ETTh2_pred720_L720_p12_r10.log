@@ -1,0 +1,125 @@
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          long_term_forecast  Is Training:        1                   
+  Model ID:           ETTh2_pred720_L720_p12_r10Model:              LUMA                
+
+[1mData Loader[0m
+  Data:               ETTh2               Root Path:          ./dataset/ETT-small/
+  Data Path:          ETTh2.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mForecasting Task[0m
+  Seq Len:            720                 Label Len:          48                  
+  Pred Len:           720                 Seasonal Patterns:  Monthly             
+  Inverse:            0                   
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            512                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.001               
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       30                  Batch Size:         256                 
+  Patience:           5                   Learning Rate:      0.02                
+  Des:                Exp                 Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+[LUMA] period_len=12  rank=10  seg_x=60  seg_y=60  task=long_term_forecast
+>>>>>>>start training : long_term_forecast_ETTh2_pred720_L720_p12_r10_LUMA_ETTh2_ftM_sl720_ll48_pl720_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_Exp_0>>>>>>>>>>>>>>>>>>>>>>>>>>
++---------------+------------+
+|    Modules    | Parameters |
++---------------+------------+
+| conv1d.weight |     13     |
+|   lowrank.U   |    600     |
+|   lowrank.s   |     10     |
+|   lowrank.V   |    600     |
++---------------+------------+
+Total Trainable Params: 1223
+train 7201
+val 2161
+test 2161
+Epoch: 1 cost time: 1.7546477317810059
+Epoch: 1, Steps: 29 | Train Loss: 0.8587258 Vali Loss: 0.6534507 Test Loss: 0.4041116
+Validation loss decreased (inf --> 0.653451).  Saving model ...
+Updating learning rate to 0.02
+Epoch: 2 cost time: 1.0279717445373535
+Epoch: 2, Steps: 29 | Train Loss: 0.8178802 Vali Loss: 0.6423145 Test Loss: 0.3935668
+Validation loss decreased (0.653451 --> 0.642314).  Saving model ...
+Updating learning rate to 0.01
+Epoch: 3 cost time: 0.9260427951812744
+Epoch: 3, Steps: 29 | Train Loss: 0.8183854 Vali Loss: 0.6498312 Test Loss: 0.3926963
+EarlyStopping counter: 1 out of 5
+Updating learning rate to 0.005
+Epoch: 4 cost time: 1.1122894287109375
+Epoch: 4, Steps: 29 | Train Loss: 0.8094016 Vali Loss: 0.6420525 Test Loss: 0.3928773
+Validation loss decreased (0.642314 --> 0.642052).  Saving model ...
+Updating learning rate to 0.0025
+Epoch: 5 cost time: 0.9929964542388916
+Epoch: 5, Steps: 29 | Train Loss: 0.8107298 Vali Loss: 0.6415356 Test Loss: 0.3923540
+Validation loss decreased (0.642052 --> 0.641536).  Saving model ...
+Updating learning rate to 0.00125
+Epoch: 6 cost time: 0.9509873390197754
+Epoch: 6, Steps: 29 | Train Loss: 0.8033135 Vali Loss: 0.6379299 Test Loss: 0.3919314
+Validation loss decreased (0.641536 --> 0.637930).  Saving model ...
+Updating learning rate to 0.000625
+Epoch: 7 cost time: 0.9880344867706299
+Epoch: 7, Steps: 29 | Train Loss: 0.8076263 Vali Loss: 0.6404009 Test Loss: 0.3922467
+EarlyStopping counter: 1 out of 5
+Updating learning rate to 0.0003125
+Epoch: 8 cost time: 0.9553778171539307
+Epoch: 8, Steps: 29 | Train Loss: 0.7974203 Vali Loss: 0.6379561 Test Loss: 0.3923145
+EarlyStopping counter: 2 out of 5
+Updating learning rate to 0.00015625
+Epoch: 9 cost time: 0.9823410511016846
+Epoch: 9, Steps: 29 | Train Loss: 0.8053485 Vali Loss: 0.6393201 Test Loss: 0.3922625
+EarlyStopping counter: 3 out of 5
+Updating learning rate to 7.8125e-05
+Epoch: 10 cost time: 0.9236874580383301
+Epoch: 10, Steps: 29 | Train Loss: 0.7999995 Vali Loss: 0.6395397 Test Loss: 0.3922261
+EarlyStopping counter: 4 out of 5
+Updating learning rate to 3.90625e-05
+Epoch: 11 cost time: 0.9275503158569336
+Epoch: 11, Steps: 29 | Train Loss: 0.8017889 Vali Loss: 0.6353471 Test Loss: 0.3922420
+Validation loss decreased (0.637930 --> 0.635347).  Saving model ...
+Updating learning rate to 1.953125e-05
+Epoch: 12 cost time: 0.9578168392181396
+Epoch: 12, Steps: 29 | Train Loss: 0.8043755 Vali Loss: 0.6400496 Test Loss: 0.3922400
+EarlyStopping counter: 1 out of 5
+Updating learning rate to 9.765625e-06
+Epoch: 13 cost time: 0.9361271858215332
+Epoch: 13, Steps: 29 | Train Loss: 0.8015275 Vali Loss: 0.6399992 Test Loss: 0.3922360
+EarlyStopping counter: 2 out of 5
+Updating learning rate to 4.8828125e-06
+Epoch: 14 cost time: 0.9953429698944092
+Epoch: 14, Steps: 29 | Train Loss: 0.8053191 Vali Loss: 0.6358991 Test Loss: 0.3922348
+EarlyStopping counter: 3 out of 5
+Updating learning rate to 2.44140625e-06
+Epoch: 15 cost time: 0.8987669944763184
+Epoch: 15, Steps: 29 | Train Loss: 0.8101058 Vali Loss: 0.6405572 Test Loss: 0.3922347
+EarlyStopping counter: 4 out of 5
+Updating learning rate to 1.220703125e-06
+Epoch: 16 cost time: 0.9553759098052979
+Epoch: 16, Steps: 29 | Train Loss: 0.8103618 Vali Loss: 0.6387086 Test Loss: 0.3922336
+EarlyStopping counter: 5 out of 5
+Early stopping
+>>>>>>>testing : long_term_forecast_ETTh2_pred720_L720_p12_r10_LUMA_ETTh2_ftM_sl720_ll48_pl720_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_Exp_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+test 2161
+test shape: (2161, 720, 7) (2161, 720, 7)
+test shape: (2161, 720, 7) (2161, 720, 7)
+mse:0.3788190186023712, mae:0.4218846559524536, dtw:Not calculated

@@ -1,0 +1,117 @@
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          long_term_forecast  Is Training:        1                   
+  Model ID:           ETTh2_pred192_L96_p8_r8Model:              LUMA                
+
+[1mData Loader[0m
+  Data:               ETTh2               Root Path:          ./dataset/ETT-small/
+  Data Path:          ETTh2.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mForecasting Task[0m
+  Seq Len:            96                  Label Len:          48                  
+  Pred Len:           192                 Seasonal Patterns:  Monthly             
+  Inverse:            0                   
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            512                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.001               
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       30                  Batch Size:         256                 
+  Patience:           5                   Learning Rate:      0.02                
+  Des:                Exp                 Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+[LUMA] period_len=8  rank=8  seg_x=12  seg_y=24  task=long_term_forecast
+>>>>>>>start training : long_term_forecast_ETTh2_pred192_L96_p8_r8_LUMA_ETTh2_ftM_sl96_ll48_pl192_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_Exp_0>>>>>>>>>>>>>>>>>>>>>>>>>>
++---------------+------------+
+|    Modules    | Parameters |
++---------------+------------+
+| conv1d.weight |     9      |
+|   lowrank.U   |    192     |
+|   lowrank.s   |     8      |
+|   lowrank.V   |     96     |
++---------------+------------+
+Total Trainable Params: 305
+train 8353
+val 2689
+test 2689
+Epoch: 1 cost time: 1.511810064315796
+Epoch: 1, Steps: 33 | Train Loss: 0.5759218 Vali Loss: 0.2774375 Test Loss: 0.4035682
+Validation loss decreased (inf --> 0.277437).  Saving model ...
+Updating learning rate to 0.02
+Epoch: 2 cost time: 0.5949320793151855
+Epoch: 2, Steps: 33 | Train Loss: 0.5455123 Vali Loss: 0.2742960 Test Loss: 0.4002921
+Validation loss decreased (0.277437 --> 0.274296).  Saving model ...
+Updating learning rate to 0.01
+Epoch: 3 cost time: 0.6560313701629639
+Epoch: 3, Steps: 33 | Train Loss: 0.5414132 Vali Loss: 0.2747045 Test Loss: 0.3996587
+EarlyStopping counter: 1 out of 5
+Updating learning rate to 0.005
+Epoch: 4 cost time: 0.6361110210418701
+Epoch: 4, Steps: 33 | Train Loss: 0.5404177 Vali Loss: 0.2733218 Test Loss: 0.3991124
+Validation loss decreased (0.274296 --> 0.273322).  Saving model ...
+Updating learning rate to 0.0025
+Epoch: 5 cost time: 0.6195647716522217
+Epoch: 5, Steps: 33 | Train Loss: 0.5408400 Vali Loss: 0.2730070 Test Loss: 0.3987628
+Validation loss decreased (0.273322 --> 0.273007).  Saving model ...
+Updating learning rate to 0.00125
+Epoch: 6 cost time: 0.6683878898620605
+Epoch: 6, Steps: 33 | Train Loss: 0.5402789 Vali Loss: 0.2738047 Test Loss: 0.3986993
+EarlyStopping counter: 1 out of 5
+Updating learning rate to 0.000625
+Epoch: 7 cost time: 0.5760424137115479
+Epoch: 7, Steps: 33 | Train Loss: 0.5404310 Vali Loss: 0.2745824 Test Loss: 0.3988393
+EarlyStopping counter: 2 out of 5
+Updating learning rate to 0.0003125
+Epoch: 8 cost time: 0.5793764591217041
+Epoch: 8, Steps: 33 | Train Loss: 0.5403833 Vali Loss: 0.2741596 Test Loss: 0.3988206
+EarlyStopping counter: 3 out of 5
+Updating learning rate to 0.00015625
+Epoch: 9 cost time: 0.5839293003082275
+Epoch: 9, Steps: 33 | Train Loss: 0.5405844 Vali Loss: 0.2723172 Test Loss: 0.3988191
+Validation loss decreased (0.273007 --> 0.272317).  Saving model ...
+Updating learning rate to 7.8125e-05
+Epoch: 10 cost time: 0.6171491146087646
+Epoch: 10, Steps: 33 | Train Loss: 0.5408197 Vali Loss: 0.2744801 Test Loss: 0.3988152
+EarlyStopping counter: 1 out of 5
+Updating learning rate to 3.90625e-05
+Epoch: 11 cost time: 0.6206388473510742
+Epoch: 11, Steps: 33 | Train Loss: 0.5403097 Vali Loss: 0.2737871 Test Loss: 0.3988232
+EarlyStopping counter: 2 out of 5
+Updating learning rate to 1.953125e-05
+Epoch: 12 cost time: 0.6819086074829102
+Epoch: 12, Steps: 33 | Train Loss: 0.5396327 Vali Loss: 0.2740813 Test Loss: 0.3988193
+EarlyStopping counter: 3 out of 5
+Updating learning rate to 9.765625e-06
+Epoch: 13 cost time: 0.6138701438903809
+Epoch: 13, Steps: 33 | Train Loss: 0.5402588 Vali Loss: 0.2758960 Test Loss: 0.3988205
+EarlyStopping counter: 4 out of 5
+Updating learning rate to 4.8828125e-06
+Epoch: 14 cost time: 0.7001993656158447
+Epoch: 14, Steps: 33 | Train Loss: 0.5392079 Vali Loss: 0.2731257 Test Loss: 0.3988197
+EarlyStopping counter: 5 out of 5
+Early stopping
+>>>>>>>testing : long_term_forecast_ETTh2_pred192_L96_p8_r8_LUMA_ETTh2_ftM_sl96_ll48_pl192_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_Exp_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+test 2689
+test shape: (2689, 192, 7) (2689, 192, 7)
+test shape: (2689, 192, 7) (2689, 192, 7)
+mse:0.37964731454849243, mae:0.3927050232887268, dtw:Not calculated
