@@ -16,8 +16,6 @@
 #   logs_reproduce/<dataset>_<pred>_p<P>_r<R>.log    one log per config
 #   logs_reproduce/reproduced_results.csv            dataset,pred_len,P,R,mse,mae,params
 #
-# Then verify against the reference numbers:
-#   python reproduce/check_reproduction.py
 # =============================================================================
 set -u
 
