@@ -8,7 +8,7 @@ mkdir -p ./logs
 model_name=LUMA
 root_path=./dataset/ETT-small/
 data_path=ETTh2.csv
-data=custom
+data=ETTh2
 seq_len=336
 
 declare -A P R
