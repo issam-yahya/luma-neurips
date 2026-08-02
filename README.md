@@ -15,6 +15,7 @@ LUMA/
 ├── models/               # model zoo — LUMA is models/LUMA.py
 ├── utils/                # metrics, tools, time features
 ├── scripts/              # TSLib-style run scripts
+├── reproduce/            # seed sweeps, period detection, efficiency profiling
 ├── dataset/              # the 6 datasets LUMA is evaluated on (bundled)
 └── checkpoints/          # (created at run time)
 ```
@@ -50,6 +51,19 @@ on: `ETT-small` (ETTh1/h2, ETTm1/m2), `electricity`, `traffic`,
 `exchange_rate`, `weather`, `illness`. Get them from
 [Time-Series-Library](https://github.com/thuml/Time-Series-Library). Drop any
 additional TSLib-format dataset into `dataset/` to train on it.
+
+## Reproduce
+
+`reproduce/` holds the scripts behind the paper's ablations and robustness
+checks:
+
+- `run_five_seeds.sh`, `aggregate_seeds.py` — multi-seed runs and aggregation
+- `run_fixed_lookback.sh`, `run_main_table_no_std.sh` — fixed-lookback and
+  no-standardization variants of the main table
+- `detect_periods.py`, `detected_periods.json` — automatic period detection
+  per dataset/pred_len, checked against the best known `P`
+- `profile_efficiency.py`, `efficiency_results.csv` — runtime/efficiency
+  profiling
 
 ## The model
 
