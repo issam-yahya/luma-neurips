@@ -1,0 +1,2 @@
+dataset,pred_len,period_len,rank,seq_len,enc_in,macs,thop_params,true_trainable_params
+electricity,720,24,10,720,321,10400400,635,635

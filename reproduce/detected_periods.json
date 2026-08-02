@@ -1,0 +1,58 @@
+[
+  {
+    "dataset": "ETTh1",
+    "pred_len": 96,
+    "seq_len": 720,
+    "detected_period": 24,
+    "matched_best_P": 24
+  },
+  {
+    "dataset": "ETTh1",
+    "pred_len": 192,
+    "seq_len": 720,
+    "detected_period": 24,
+    "matched_best_P": 24
+  },
+  {
+    "dataset": "ETTh1",
+    "pred_len": 336,
+    "seq_len": 720,
+    "detected_period": 24,
+    "matched_best_P": 24
+  },
+  {
+    "dataset": "ETTh1",
+    "pred_len": 720,
+    "seq_len": 720,
+    "detected_period": 24,
+    "matched_best_P": 24
+  },
+  {
+    "dataset": "traffic",
+    "pred_len": 96,
+    "seq_len": 720,
+    "detected_period": 24,
+    "matched_best_P": 24
+  },
+  {
+    "dataset": "traffic",
+    "pred_len": 192,
+    "seq_len": 720,
+    "detected_period": 24,
+    "matched_best_P": 24
+  },
+  {
+    "dataset": "traffic",
+    "pred_len": 336,
+    "seq_len": 720,
+    "detected_period": 24,
+    "matched_best_P": 24
+  },
+  {
+    "dataset": "traffic",
+    "pred_len": 720,
+    "seq_len": 720,
+    "detected_period": 24,
+    "matched_best_P": 24
+  }
+]
