@@ -7,9 +7,9 @@ import pandas as pd
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-SEEDS_RUNS_DIR = os.path.join(SCRIPT_DIR, 'seeds_runs')
-INPUT_CSV = os.path.join(SEEDS_RUNS_DIR, 'multi_seed_runs.csv')
-OUTPUT_CSV = os.path.join(SEEDS_RUNS_DIR, 'aggregated.csv')
+REPO_DIR = os.path.dirname(SCRIPT_DIR)
+INPUT_CSV = os.path.join(REPO_DIR, 'logs_reproduce_multiseed', 'multiseed_results.csv')
+OUTPUT_CSV = os.path.join(SCRIPT_DIR, 'aggregated.csv')
 
 
 def parse_args():

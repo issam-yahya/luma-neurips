@@ -7,10 +7,10 @@
 # training logs (reproduce/configs_luma_best.csv).
 #
 # Usage:
-#   bash scripts/reproduce/run_main_table.sh                 # all datasets
-#   bash scripts/reproduce/run_main_table.sh ETTh1 ETTh2     # only these
-#   GPU=1 bash scripts/reproduce/run_main_table.sh           # pick CUDA device
-#   SEED=2021 bash scripts/reproduce/run_main_table.sh       # override seed
+#   bash reproduce/run_main_table.sh                 # all datasets
+#   bash reproduce/run_main_table.sh ETTh1 ETTh2     # only these
+#   GPU=1 bash reproduce/run_main_table.sh           # pick CUDA device
+#   SEED=2021 bash reproduce/run_main_table.sh       # override seed
 #
 # Outputs:
 #   logs_reproduce/<dataset>_<pred>_p<P>_r<R>.log    one log per config
@@ -20,7 +20,7 @@
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 cd "${REPO_DIR}"
 
 CONFIG="${REPO_DIR}/reproduce/configs_luma_best.csv"

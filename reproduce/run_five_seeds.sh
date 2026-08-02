@@ -6,10 +6,10 @@
 # across 5 seeds, to verify the reported numbers aren't a cherry-picked draw.
 #
 # Usage:
-#   bash scripts/reproduce/run_five_seeds.sh                # all datasets
-#   bash scripts/reproduce/run_five_seeds.sh ETTh1 traffic  # subset
-#   GPU=1 bash scripts/reproduce/run_five_seeds.sh
-#   SEEDS="2021 2022" bash scripts/reproduce/run_five_seeds.sh
+#   bash reproduce/run_five_seeds.sh                # all datasets
+#   bash reproduce/run_five_seeds.sh ETTh1 traffic  # subset
+#   GPU=1 bash reproduce/run_five_seeds.sh
+#   SEEDS="2021 2022" bash reproduce/run_five_seeds.sh
 #
 # Outputs:
 #   logs_reproduce_multiseed/<dataset>_<pred>_p<P>_r<R>_seed<seed>.log
@@ -17,12 +17,12 @@
 #     columns: dataset,pred_len,P,R,seed,mse,mae,params
 #
 # Then aggregate:
-#   python scripts/reproduce/aggregate_seeds.py
+#   python reproduce/aggregate_seeds.py
 # =============================================================================
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 cd "${REPO_DIR}"
 
 CONFIG="${REPO_DIR}/reproduce/configs_luma_best.csv"
@@ -97,4 +97,4 @@ done
 
 echo
 echo "Done. Results: ${RESULTS}"
-echo "Aggregate with:  python scripts/reproduce/aggregate_seeds.py"
+echo "Aggregate with:  python reproduce/aggregate_seeds.py"

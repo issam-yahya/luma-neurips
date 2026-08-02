@@ -10,10 +10,10 @@
 # used a different lookback.
 #
 # Usage:
-#   bash scripts/reproduce/run_fixed_lookback.sh                # all datasets
-#   bash scripts/reproduce/run_fixed_lookback.sh ETTh1 traffic  # subset
-#   GPU=1 bash scripts/reproduce/run_fixed_lookback.sh
-#   SEED=2021 bash scripts/reproduce/run_fixed_lookback.sh
+#   bash reproduce/run_fixed_lookback.sh                # all datasets
+#   bash reproduce/run_fixed_lookback.sh ETTh1 traffic  # subset
+#   GPU=1 bash reproduce/run_fixed_lookback.sh
+#   SEED=2021 bash reproduce/run_fixed_lookback.sh
 #
 # Outputs:
 #   logs_reproduce_fixed_lookback/<dataset>_<pred>_p<P>_r<R>_sl720.log
@@ -22,7 +22,7 @@
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 cd "${REPO_DIR}"
 
 FIXED_SEQ_LEN=720
