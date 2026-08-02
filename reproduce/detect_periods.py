@@ -1,123 +1,342 @@
 """
-FFT-based period detection, restricted to the datasets where it actually
-matches the reported best period_len (P): ETTh1 and traffic.
+Offline FFT-based period detection for LUMA.
 
-This is the same _fft_period_length algorithm that lives commented-out in
-models/MinimalTS.py, applied to non-overlapping seq_len windows of each
-dataset's train split (mirroring what the model would see at inference).
+For each dataset–horizon configuration, the script:
 
-Across all 9 datasets in reproduce/configs_luma_best.csv, FFT-detected period
-matches the reported best P in only 11/36 configs -- reliably so only for
-ETTh1 (4/4) and traffic (4/4); electricity partially matches (3/4); ETTh2,
-ETTm1, ETTm2, exchange, weather, ili do not match. See fft_vs_bestP.py at the
-repo root for the full 36-row comparison.
+1. loads only the training split;
+2. extracts eligible input windows;
+3. averages each window across variables;
+4. removes the FFT DC component;
+5. detects the dominant valid period per window;
+6. reports the median detected period.
 
-Output: scripts/reproduce/detected_periods.json, containing only the
-datasets/pred_lens where fft_P == best_P.
+Output:
+    reproduce/detected_periods.json
 """
-import os
+
+from __future__ import annotations
+
+import argparse
 import json
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import torch
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-DATA = os.path.join(ROOT, 'dataset')
-CONFIGS_CSV = os.path.join(ROOT, 'reproduce', 'configs_luma_best.csv')
-OUT_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'detected_periods.json')
 
-# Only datasets where FFT period detection matches the reported best P.
-KEEP_DATASETS = {'ETTh1', 'traffic'}
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+
+DEFAULT_DATA_DIR = REPO_ROOT / "dataset"
+DEFAULT_CONFIGS = SCRIPT_DIR / "configs_luma_best.csv"
+DEFAULT_OUTPUT = SCRIPT_DIR / "detected_periods.json"
+
 
 DATASET_PATHS = {
-    'ETTh1':   ('ETT-small/ETTh1.csv', 'ETTh'),
-    'traffic': ('traffic/traffic.csv', 'ratio'),
+    "ETTh1": ("ETT-small/ETTh1.csv", "ETTh"),
+    "ETTh2": ("ETT-small/ETTh2.csv", "ETTh"),
+    "ETTm1": ("ETT-small/ETTm1.csv", "ETTm"),
+    "ETTm2": ("ETT-small/ETTm2.csv", "ETTm"),
+    "weather": ("weather/weather.csv", "ratio"),
+    "electricity": ("electricity/electricity.csv", "ratio"),
+    "traffic": ("traffic/traffic.csv", "ratio"),
+    "exchange": ("exchange_rate/exchange_rate.csv", "ratio"),
+    "ili": ("illness/national_illness.csv", "ratio"),
 }
 
 
-def load_train_split(path, convention):
+def load_train_split(path: Path, convention: str) -> np.ndarray:
+    """Load only the training partition."""
+    if not path.is_file():
+        raise FileNotFoundError(f"Dataset not found: {path}")
+
     df = pd.read_csv(path)
-    cols = list(df.columns)
-    if 'date' in cols:
-        cols.remove('date')
-    data = df[cols].values.astype(np.float64)
-    if convention == 'ETTh':
-        border2 = 12 * 30 * 24
+    feature_columns = [column for column in df.columns if column != "date"]
+
+    if not feature_columns:
+        raise ValueError(f"No feature columns found in {path}")
+
+    data = df[feature_columns].to_numpy(dtype=np.float32)
+
+    if convention == "ETTh":
+        train_end = 12 * 30 * 24
+    elif convention == "ETTm":
+        train_end = 12 * 30 * 24 * 4
+    elif convention == "ratio":
+        train_end = int(len(data) * 0.7)
     else:
-        border2 = int(len(df) * 0.7)
-    return data[0:border2]
+        raise ValueError(f"Unknown split convention: {convention}")
+
+    return data[:train_end]
 
 
-def fft_period_length(x_mean_t: torch.Tensor, L: int, min_w: int, max_w: int) -> int:
-    """Verbatim port of the commented-out _fft_period_length in models/MinimalTS.py."""
-    spec = torch.fft.rfft(x_mean_t, dim=1)
-    power = (spec.real ** 2 + spec.imag ** 2)
-    power[:, 0] = 0
+def detect_periods_per_window(
+    windows: torch.Tensor,
+    seq_len: int,
+    min_period: int,
+    max_period: int,
+) -> torch.Tensor:
+    """
+    Detect the dominant FFT period for each window.
 
-    freqs = torch.arange(power.size(1), device=x_mean_t.device)
+    Args:
+        windows: Tensor of shape [N, seq_len].
+    """
+    spectrum = torch.fft.rfft(windows, dim=1)
+    power = spectrum.real.square() + spectrum.imag.square()
 
-    with torch.no_grad():
-        period_est = torch.where(
-            freqs > 0,
-            (L / torch.clamp(freqs, min=1)).round().long(),
-            torch.zeros_like(freqs)
+    # Remove the zero-frequency/DC component.
+    power[:, 0] = 0.0
+
+    frequencies = torch.arange(
+        power.shape[1],
+        device=power.device,
+    )
+
+    candidate_periods = torch.where(
+        frequencies > 0,
+        (
+            seq_len / frequencies.clamp(min=1)
+        ).round().long(),
+        torch.zeros_like(frequencies),
+    )
+
+    valid = (
+        (candidate_periods >= min_period)
+        & (candidate_periods <= max_period)
+    )
+
+    if not bool(valid.any()):
+        raise ValueError(
+            f"No valid frequency bins for seq_len={seq_len}, "
+            f"period range=[{min_period}, {max_period}]"
         )
-        valid = (period_est >= min_w) & (period_est <= max_w)
-        masked_power = torch.where(valid, power, torch.zeros_like(power))
 
-    k_hat = masked_power.argmax(dim=1)
-    w_hat_b = (L / torch.clamp(k_hat, min=1)).round().long()
-    w_hat_b = torch.clamp(w_hat_b, min=min_w, max=max_w)
+    masked_power = power.masked_fill(
+        ~valid.unsqueeze(0),
+        float("-inf"),
+    )
 
-    w_hat = int(torch.median(w_hat_b).item())
-    w_hat = max(min_w, min(max_w, w_hat))
+    dominant_bins = masked_power.argmax(dim=1)
 
-    if w_hat < 2:
-        w_hat = 2
-    if L // w_hat < 2:
-        w_hat = max(2, L // 2)
+    detected_periods = (
+        seq_len / dominant_bins.clamp(min=1)
+    ).round().long()
 
-    return int(w_hat)
+    return detected_periods.clamp(
+        min=min_period,
+        max=max_period,
+    )
 
 
-def main():
-    configs = pd.read_csv(CONFIGS_CSV)
+def detect_dataset_period(
+    train_data: np.ndarray,
+    seq_len: int,
+    pred_len: int,
+    min_period: int,
+    max_period: int,
+    stride: int,
+    batch_size: int,
+) -> tuple[int, int]:
+    """Return the median period across eligible training windows."""
+    eligible_windows = len(train_data) - seq_len - pred_len + 1
+
+    if eligible_windows <= 0:
+        raise ValueError(
+            f"Training split too short for seq_len={seq_len} "
+            f"and pred_len={pred_len}"
+        )
+
+    windows = np.lib.stride_tricks.sliding_window_view(
+        train_data,
+        window_shape=seq_len,
+        axis=0,
+    )
+
+    # sliding_window_view returns [N, C, L].
+    windows = windows[:eligible_windows:stride]
+    windows = windows.mean(axis=1)
+
+    detected_batches = []
+
+    for start in range(0, len(windows), batch_size):
+        batch_array = np.ascontiguousarray(
+            windows[start : start + batch_size]
+        )
+        batch = torch.from_numpy(batch_array).float()
+
+        periods = detect_periods_per_window(
+            windows=batch,
+            seq_len=seq_len,
+            min_period=min_period,
+            max_period=max_period,
+        )
+
+        detected_batches.append(periods.cpu())
+
+    all_periods = torch.cat(detected_batches)
+
+    return (
+        int(torch.median(all_periods).item()),
+        int(all_periods.numel()),
+    )
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Detect LUMA periods using training-set FFT."
+    )
+
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=DEFAULT_DATA_DIR,
+    )
+    parser.add_argument(
+        "--configs",
+        type=Path,
+        default=DEFAULT_CONFIGS,
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=DEFAULT_OUTPUT,
+    )
+    parser.add_argument(
+        "--min-period",
+        type=int,
+        default=2,
+    )
+    parser.add_argument(
+        "--max-period",
+        type=int,
+        default=48,
+    )
+    parser.add_argument(
+        "--stride",
+        type=int,
+        default=1,
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=2048,
+    )
+    parser.add_argument(
+        "--datasets",
+        nargs="*",
+        default=None,
+        help="Optional dataset subset, e.g. ETTh1 traffic",
+    )
+
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+
+    if not args.configs.is_file():
+        raise FileNotFoundError(
+            f"Configuration file not found: {args.configs}"
+        )
+
+    configs = pd.read_csv(args.configs)
+
+    required_columns = {
+        "dataset",
+        "pred_len",
+        "seq_len",
+    }
+
+    missing = required_columns.difference(configs.columns)
+
+    if missing:
+        raise ValueError(
+            "Missing configuration columns: "
+            + ", ".join(sorted(missing))
+        )
+
+    if args.datasets:
+        configs = configs[
+            configs["dataset"].isin(args.datasets)
+        ]
+
+    configs = (
+        configs[
+            ["dataset", "pred_len", "seq_len"]
+        ]
+        .drop_duplicates()
+        .sort_values(["dataset", "pred_len"])
+    )
+
+    train_cache: dict[str, np.ndarray] = {}
     results = []
 
-    for ds in sorted(KEEP_DATASETS):
-        rel_path, conv = DATASET_PATHS[ds]
-        data = load_train_split(os.path.join(DATA, rel_path), conv)
+    for row in configs.itertuples(index=False):
+        dataset = str(row.dataset)
+        pred_len = int(row.pred_len)
+        seq_len = int(row.seq_len)
 
-        rows = configs[configs['dataset'] == ds]
-        for _, r in rows.iterrows():
-            pred_len = int(r['pred_len'])
-            seq_len = int(r['seq_len'])
-            best_P = int(r['period_len'])
+        if dataset not in DATASET_PATHS:
+            print(f"Skipping unsupported dataset: {dataset}")
+            continue
 
-            if len(data) < seq_len:
-                continue
-            n_windows = len(data) // seq_len
-            windows = data[:n_windows * seq_len].reshape(n_windows, seq_len, -1)
-            x = torch.from_numpy(windows).float()
-            x_mean = x.mean(dim=2)
+        relative_path, convention = DATASET_PATHS[dataset]
 
-            min_w, max_w = 2, seq_len // 2
-            fft_P = fft_period_length(x_mean, seq_len, min_w, max_w)
+        if dataset not in train_cache:
+            train_cache[dataset] = load_train_split(
+                args.data_dir / relative_path,
+                convention,
+            )
 
-            if fft_P == best_P:
-                results.append(dict(
-                    dataset=ds, pred_len=pred_len, seq_len=seq_len,
-                    detected_period=fft_P, matched_best_P=best_P,
-                ))
+        max_period = min(
+            args.max_period,
+            seq_len // 2,
+        )
 
-    with open(OUT_JSON, 'w') as f:
-        json.dump(results, f, indent=2)
+        detected_period, number_of_windows = detect_dataset_period(
+            train_data=train_cache[dataset],
+            seq_len=seq_len,
+            pred_len=pred_len,
+            min_period=args.min_period,
+            max_period=max_period,
+            stride=args.stride,
+            batch_size=args.batch_size,
+        )
 
-    print(f"Wrote {len(results)} matched-period entries to {OUT_JSON}")
-    for r in results:
-        print(f"  {r['dataset']:10s} pred_len={r['pred_len']:4d}  "
-              f"detected_period={r['detected_period']}")
+        results.append(
+            {
+                "dataset": dataset,
+                "pred_len": pred_len,
+                "seq_len": seq_len,
+                "detected_period": detected_period,
+                "number_of_training_windows": number_of_windows,
+            }
+        )
+
+        print(
+            f"{dataset:12s} "
+            f"H={pred_len:4d} "
+            f"L={seq_len:4d} "
+            f"P={detected_period:3d}"
+        )
+
+    args.output.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    with args.output.open(
+        "w",
+        encoding="utf-8",
+    ) as file:
+        json.dump(results, file, indent=2)
+
+    print(
+        f"\nWrote {len(results)} entries to {args.output}"
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
