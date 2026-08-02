@@ -65,6 +65,12 @@ checks:
 - `profile_efficiency.py`, `efficiency_results.csv` — runtime/efficiency
   profiling
 
+## Fixes
+
+- `LUMA_ETTh2.sh` and `LUMA_ETTm2.sh` now use the dedicated ETT loader
+  (`data=ETTh2` / `data=ETTm2`) instead of `data=custom`, matching
+  `LUMA_ETTh1.sh` / `LUMA_ETTm1.sh`.
+
 ## The model
 
 `models/LUMA.py` — a minimal low-rank forecaster. The core is a per-period
