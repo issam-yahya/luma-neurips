@@ -58,7 +58,7 @@ tail -n +2 "${CONFIG}" | while IFS=, read -r dataset pred_len period_len rank se
         python -u run.py \
             --task_name long_term_forecast \
             --is_training 1 \
-            --model MinimalTS \
+            --model LUMA \
             --model_id "${tag}" \
             --data "${data}" \
             --root_path "${root_path}" \
