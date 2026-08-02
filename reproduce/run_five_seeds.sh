@@ -4,9 +4,6 @@
 # =============================================================================
 # Reruns every (dataset, pred_len) config from reproduce/configs_luma_best.csv
 # across 5 seeds, to verify the reported numbers aren't a cherry-picked draw.
-# reproduce/README.md already documents that seeds 2021-2025 vary MSE by only
-# ~0.3%; this script is what produces the raw per-seed numbers behind that
-# claim, in the scripts/reproduce/ layout.
 #
 # Usage:
 #   bash scripts/reproduce/run_five_seeds.sh                # all datasets
